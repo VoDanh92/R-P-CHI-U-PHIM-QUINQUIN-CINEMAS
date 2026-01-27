@@ -1,0 +1,26 @@
+
+# Thư mục thư viện
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Các tệp tin build và log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Biến môi trường (Tránh lộ API Key)
+.env
+.env.local
+.env.*.local
+
+# Thư mục IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
