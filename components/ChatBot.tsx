@@ -46,7 +46,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onStartBooking }) => {
     }
 
     if (name === 'book_movie') {
-      const movie = MOVIES.find(m => m.title.toLowerCase().includes(args.movieTitle.toLowerCase()));
+      const movie = MOVIES.find(m => m.title.toLowerCase().includes(args.movieTitle?.toLowerCase() || ''));
       if (movie) {
         if (onStartBooking) {
           setTimeout(() => onStartBooking(movie.title), 500);
@@ -72,10 +72,15 @@ const ChatBot: React.FC<ChatBotProps> = ({ onStartBooking }) => {
       
       if (response.functionCalls && response.functionCalls.length > 0) {
         for (const fc of response.functionCalls) {
-          const result = await executeFunction(fc.name, fc.args);
-          setMessages(prev => [...prev, { role: 'bot', text: result }]);
+          // Kiểm tra fc.name để tránh lỗi TS2345
+          const functionName = fc.name || '';
+          if (functionName) {
+            const result = await executeFunction(functionName, fc.args);
+            setMessages(prev => [...prev, { role: 'bot', text: result }]);
+          }
         }
       } else {
+        // response.text có thể undefined, dùng fallback string
         setMessages(prev => [...prev, { role: 'bot', text: response.text || 'Tôi chưa hiểu ý bạn lắm, bạn có thể nói rõ hơn được không?' }]);
       }
     } catch (err) {

@@ -8,7 +8,7 @@ import AdminPanel from './components/AdminPanel';
 import CustomerLogin from './components/CustomerLogin';
 import CustomerProfile from './components/CustomerProfile';
 import MovieDetail from './components/MovieDetail';
-import { MOVIES as DEFAULT_MOVIES, THEATERS, COMBOS } from './constants.tsx';
+import { MOVIES as DEFAULT_MOVIES, THEATERS, COMBOS } from './constants';
 import { Movie, Theater, ShowTime, Combo, Ticket } from './types';
 
 const App: React.FC = () => {
