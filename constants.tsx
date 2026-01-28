@@ -12,7 +12,8 @@ export const MOVIES: Movie[] = [
     posterUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/s5HQfPixVrMWtnsA2Mizwoeeybr.jpg',
     backdropUrl: 'https://image.tmdb.org/t/p/original/Yc9q6Pu6roMX8uYxEn0796U08y.jpg',
     releaseDate: '2024-09-20',
-    isComingSoon: false
+    isComingSoon: false,
+    trailerUrl: ''
   },
   {
     id: 'm2',
@@ -22,9 +23,10 @@ export const MOVIES: Movie[] = [
     rating: 8.9,
     duration: '1h 44m',
     posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/6Y00p49EivhY47D0y793pS6k8Uv.jpg',
-    backdropUrl: 'https://www.themoviedb.org/t/p/original/66986C9S798pS6k8Uv.jpg',
+    backdropUrl: 'https://www.themoviedb.org/t/p/original/m9m9NfHh5U8.jpg',
     releaseDate: '2024-09-20',
-    isComingSoon: false
+    isComingSoon: false,
+    trailerUrl: ''
   },
   {
     id: 'm3',
@@ -36,7 +38,8 @@ export const MOVIES: Movie[] = [
     posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/36p8Uv6Y00p49EivhY47D0y79.jpg',
     backdropUrl: 'https://www.themoviedb.org/t/p/original/speak-no-evil-backdrop.jpg',
     releaseDate: '2024-09-13',
-    isComingSoon: false
+    isComingSoon: false,
+    trailerUrl: ''
   },
   {
     id: 'm4',
@@ -48,7 +51,8 @@ export const MOVIES: Movie[] = [
     posterUrl: 'https://iguov8nhvyobj.vcdn.cloud/media/catalog/product/l/m/lm7_teaser_poster_1_.jpg',
     backdropUrl: 'https://iguov8nhvyobj.vcdn.cloud/media/banner/cache/1/b58515f018eb9da2a7589055a435ae0e/l/a/lat_mat_7_980x448.jpg',
     releaseDate: '2024-04-26',
-    isComingSoon: false
+    isComingSoon: false,
+    trailerUrl: ''
   },
   {
     id: 'm6',
@@ -60,7 +64,8 @@ export const MOVIES: Movie[] = [
     posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/n66986C9S798pS6k8Uv.jpg',
     backdropUrl: 'https://www.themoviedb.org/t/p/original/joker-2-bg.jpg',
     releaseDate: '2024-10-04',
-    isComingSoon: true
+    isComingSoon: true,
+    trailerUrl: ''
   },
   {
     id: 'm7',
@@ -72,31 +77,8 @@ export const MOVIES: Movie[] = [
     posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/gladiator-2-poster.jpg',
     backdropUrl: 'https://www.themoviedb.org/t/p/original/gladiator-2-bg.jpg',
     releaseDate: '2024-11-22',
-    isComingSoon: true
-  },
-  {
-    id: 'm8',
-    title: 'Moana 2',
-    description: 'Moana nhận được một lời kêu gọi bất ngờ từ tổ tiên và thực hiện chuyến hành trình xa xôi đến các vùng biển rộng lớn của Châu Đại Dương.',
-    genre: ['Hoạt hình', 'Phiêu lưu'],
-    rating: 0,
-    duration: '1h 45m',
-    posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/moana-2-poster.jpg',
-    backdropUrl: 'https://www.themoviedb.org/t/p/original/moana-2-bg.jpg',
-    releaseDate: '2024-11-27',
-    isComingSoon: true
-  },
-  {
-    id: 'm9',
-    title: 'Mufasa: Vua Sư Tử',
-    description: 'Khám phá câu chuyện chưa kể về sự trỗi dậy của Mufasa, từ một chú sư tử mồ côi trở thành vị vua vĩ đại của Pride Lands.',
-    genre: ['Phiêu lưu', 'Gia đình'],
-    rating: 0,
-    duration: '2h 00m',
-    posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/mufasa-poster.jpg',
-    backdropUrl: 'https://www.themoviedb.org/t/p/original/mufasa-bg.jpg',
-    releaseDate: '2024-12-20',
-    isComingSoon: true
+    isComingSoon: true,
+    trailerUrl: ''
   }
 ];
 
@@ -132,36 +114,6 @@ export const THEATERS: Theater[] = [
       { id: 's10', time: '14:00', format: 'IMAX', price: 230000 },
       { id: 's11', time: '18:30', format: '2D', price: 105000 }
     ]
-  },
-  {
-    id: 't4',
-    name: 'QuinQuin Metropolis',
-    location: '29 Liễu Giai, Ngọc Khánh, Ba Đình, Hà Nội',
-    showtimes: [
-      { id: 's12', time: '11:15', format: '2D', price: 115000 },
-      { id: 's13', time: '16:45', format: '3D', price: 170000 },
-      { id: 's14', time: '20:00', format: '2D', price: 115000 }
-    ]
-  },
-  {
-    id: 't5',
-    name: 'QuinQuin Vĩnh Trung Plaza',
-    location: '255-257 Hùng Vương, Thanh Khê, Đà Nẵng',
-    showtimes: [
-      { id: 's15', time: '10:00', format: '2D', price: 80000 },
-      { id: 's16', time: '15:30', format: '2D', price: 80000 },
-      { id: 's17', time: '19:45', format: '2D', price: 90000 }
-    ]
-  },
-  {
-    id: 't6',
-    name: 'QuinQuin Big C Cần Thơ',
-    location: 'Lô số 1, Khu Dân Cư Hưng Phú 1, Cái Răng, Cần Thơ',
-    showtimes: [
-      { id: 's18', time: '09:15', format: '2D', price: 75000 },
-      { id: 's19', time: '13:00', format: '2D', price: 75000 },
-      { id: 's20', time: '18:15', format: '2D', price: 85000 }
-    ]
   }
 ];
 
@@ -169,36 +121,43 @@ export const COMBOS: Combo[] = [
   {
     id: 'c1',
     name: 'COMBO ĐƠN (1 BẮP + 1 NƯỚC)',
-    description: '1 Bắp lớn (Vị ngọt/mặn) + 1 Nước ngọt cỡ lớn',
+    description: '1 Bắp lớn (Vị ngọt/mặn) + 1 Nước ngọt cỡ lớn (L)',
     price: 85000,
     imageUrl: 'https://images.unsplash.com/photo-1585647347384-2593bc35786b?q=80&w=400&h=400&auto=format&fit=crop'
   },
   {
     id: 'c2',
     name: 'COMBO ĐÔI (1 BẮP + 2 NƯỚC)',
-    description: '1 Bắp lớn (L) + 2 Nước ngọt (L)',
+    description: '1 Bắp lớn (Vị ngọt/mặn) + 2 Nước ngọt cỡ lớn (L)',
     price: 125000,
     imageUrl: 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=400&h=400&auto=format&fit=crop'
   },
   {
-    id: 'c4',
-    name: 'COMBO GIA ĐÌNH SIÊU KHỦNG',
-    description: '2 Bắp lớn + 4 Nước ngọt lớn + 1 Khoai tây chiên',
-    price: 195000,
+    id: 'c3',
+    name: 'COMBO GIA ĐÌNH (2 BẮP + 4 NƯỚC)',
+    description: '2 Bắp lớn (L) + 4 Nước ngọt (L) - Tiết kiệm hơn cho cả nhà',
+    price: 245000,
     imageUrl: 'https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?q=80&w=400&h=400&auto=format&fit=crop'
   },
   {
-    id: 'c3',
-    name: 'BẮP RANG LẺ (SIZE L)',
-    description: 'Bắp rang bơ vàng óng, thơm lừng vị phô mai hoặc truyền thống',
-    price: 55000,
-    imageUrl: 'https://images.unsplash.com/photo-1572177191856-3cde618dee1f?q=80&w=400&h=400&auto=format&fit=crop'
+    id: 'c4',
+    name: 'COMBO SNACK (1 BẮP + 1 SNACK + 2 NƯỚC)',
+    description: '1 Bắp (L) + 1 Khoai tây chiên/Snack + 2 Nước ngọt (L)',
+    price: 155000,
+    imageUrl: 'https://images.unsplash.com/photo-1572449043416-55f4685c9bb7?q=80&w=400&h=400&auto=format&fit=crop'
   },
   {
     id: 'c5',
-    name: 'NƯỚC NGỌT LẺ (SIZE L)',
-    description: 'Thức uống có gas sảng khoái với nhiều đá lạnh',
-    price: 35000,
-    imageUrl: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=400&h=400&auto=format&fit=crop'
+    name: 'COMBO QUINQUIN VIP (PHÔ MAI + GẤU)',
+    description: '1 Bắp Phô Mai (L) + 1 Nước (L) + 1 Gấu bông QuinQuin (Limited)',
+    price: 195000,
+    imageUrl: 'https://images.unsplash.com/photo-1559440662-30b85e49263e?q=80&w=400&h=400&auto=format&fit=crop'
+  },
+  {
+    id: 'c6',
+    name: 'COMBO KIDS (1 BẮP NHỎ + 1 NƯỚC ÉP)',
+    description: '1 Bắp nhỏ (S) + 1 Hộp nước trái cây/Sữa - Dành riêng cho bé',
+    price: 65000,
+    imageUrl: 'https://images.unsplash.com/photo-1582106245687-cbb466a9f07f?q=80&w=400&h=400&auto=format&fit=crop'
   }
 ];
