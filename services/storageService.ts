@@ -43,10 +43,11 @@ class StorageService {
 
         request.onsuccess = () => {
           const movies = request.result;
-          if (movies && Array.isArray(movies) && movies.length > 0) {
+          // Chỉ fallback nếu movies là undefined hoặc null (chưa từng được khởi tạo)
+          // Nếu movies là [] (mảng trống do người dùng xóa hết), ta vẫn trả về []
+          if (movies !== undefined && movies !== null && Array.isArray(movies)) {
             resolve(movies);
           } else {
-            // Fallback to localStorage for backward compatibility or default
             const legacy = localStorage.getItem('cine_movies');
             resolve(legacy ? JSON.parse(legacy) : DEFAULT_MOVIES);
           }
@@ -66,7 +67,6 @@ class StorageService {
       const request = store.put(movies, 'cine_movies');
 
       request.onsuccess = () => {
-        // Also clear legacy to save space
         localStorage.removeItem('cine_movies');
         resolve();
       };

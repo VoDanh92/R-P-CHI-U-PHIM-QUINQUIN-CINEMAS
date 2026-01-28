@@ -37,14 +37,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
       const registry = JSON.parse(localStorage.getItem('quinquin_users_registry') || '[]');
       setUsers(registry);
 
-      if (!selectedMovieId && movieList.length > 0) {
+      // Nếu đang chỉnh sửa phim mà phim đó bị xóa từ tab khác, reset editor
+      if (selectedMovieId) {
+        const stillExists = movieList.find(m => m.id === selectedMovieId);
+        if (!stillExists) {
+          setSelectedMovieId(null);
+          setEditForm(null);
+        } else {
+          setEditForm({ ...stillExists });
+        }
+      } else if (movieList.length > 0 && !editForm) {
         setSelectedMovieId(movieList[0].id);
         setEditForm({ ...movieList[0] });
       }
     } catch (e) {
       setMovies(DEFAULT_MOVIES);
     }
-  }, [selectedMovieId]);
+  }, [selectedMovieId, editForm]);
 
   useEffect(() => {
     const auth = sessionStorage.getItem('admin_auth');
@@ -59,6 +68,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
 
     const unsubscribe = syncService.subscribe((msg) => {
       if (msg.type === SyncEventType.TICKET_BOOKED) fetchData();
+      if (msg.type === SyncEventType.MOVIE_UPDATED && msg.clientId !== syncService.getClientId()) {
+         // Cập nhật danh sách phim nếu có thay đổi từ tab/máy khác
+         setMovies(msg.payload);
+         setLogs(prev => [`[${new Date().toLocaleTimeString()}] Đã đồng bộ danh sách phim từ hệ thống.`, ...prev]);
+      }
     });
     return () => unsubscribe();
   }, [fetchData]);
@@ -95,6 +109,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     await saveMovies(updated);
     setLogs(prev => [`[${new Date().toLocaleTimeString()}] Đã cập nhật & đồng bộ: ${editForm.title}`, ...prev]);
     alert("Dữ liệu phim đã được lưu và đồng bộ toàn hệ thống!");
+  };
+
+  const handleDeleteMovie = async () => {
+    if (!editForm) return;
+    const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa phim "${editForm.title}" không? Hành động này không thể hoàn tác.`);
+    if (confirmDelete) {
+      const updated = movies.filter(m => m.id !== editForm.id);
+      await saveMovies(updated);
+      setLogs(prev => [`[${new Date().toLocaleTimeString()}] Đã xoá phim: ${editForm.title}`, ...prev]);
+      
+      // Reset editor về phim đầu tiên trong danh sách mới (nếu còn)
+      if (updated.length > 0) {
+        setSelectedMovieId(updated[0].id);
+        setEditForm({ ...updated[0] });
+      } else {
+        setSelectedMovieId(null);
+        setEditForm(null);
+      }
+      alert("Đã xoá phim thành công!");
+    }
   };
 
   const handleFileUpload = (type: 'poster' | 'backdrop' | 'trailer') => {
@@ -141,7 +175,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             setIsLoggedIn(true);
             sessionStorage.setItem('admin_auth', 'true');
           } else setLoginError('ID hoặc mật mã không chính xác!');
-        }} className="glass w-full max-w-md p-12 rounded-[3rem] border-white/10 text-center shadow-[0_0_80px_rgba(225,29,72,0.1)]">
+        }} className="glass w-full max-w-md p-12 rounded-[3rem] border-white/10 text-center shadow-[0_0_80px_rgba(225,29,72,0.15)]">
           <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center font-black text-3xl italic text-white mx-auto mb-6 shadow-2xl">Q</div>
           <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8">QUINQUIN CONSOLE</h2>
           <div className="space-y-4">
@@ -206,26 +240,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 </button>
                 
                 <div className="space-y-8 flex-1 overflow-y-auto pr-2 custom-scrollbar max-h-[60vh]">
-                  {['ĐANG CHIẾU', 'SẮP CHIẾU'].map(section => (
-                    <div key={section} className="space-y-4">
-                      <h3 className="text-[9px] font-black text-zinc-700 uppercase italic tracking-widest ml-4">{section}</h3>
-                      {movies.filter(m => section === 'ĐANG CHIẾU' ? !m.isComingSoon : m.isComingSoon).map(movie => (
-                        <div 
-                          key={movie.id} 
-                          onClick={() => handleSelectMovie(movie)}
-                          className={`group p-4 rounded-[2rem] flex items-center gap-5 cursor-pointer border-2 transition-all ${selectedMovieId === movie.id ? 'bg-zinc-900/50 border-red-600 shadow-[0_0_25px_rgba(225,29,72,0.15)]' : 'bg-zinc-900/10 border-white/5 hover:border-white/10'}`}
-                        >
-                          <div className="w-14 h-20 bg-zinc-800 rounded-2xl overflow-hidden shrink-0">
-                             {movie.posterUrl ? <img src={movie.posterUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-900 font-black">?</div>}
+                  {['ĐANG CHIẾU', 'SẮP CHIẾU'].map(section => {
+                    const filteredMovies = movies.filter(m => section === 'ĐANG CHIẾU' ? !m.isComingSoon : m.isComingSoon);
+                    if (filteredMovies.length === 0) return null;
+                    return (
+                      <div key={section} className="space-y-4">
+                        <h3 className="text-[9px] font-black text-zinc-700 uppercase italic tracking-widest ml-4">{section}</h3>
+                        {filteredMovies.map(movie => (
+                          <div 
+                            key={movie.id} 
+                            onClick={() => handleSelectMovie(movie)}
+                            className={`group p-4 rounded-[2rem] flex items-center gap-5 cursor-pointer border-2 transition-all ${selectedMovieId === movie.id ? 'bg-zinc-900/50 border-red-600 shadow-[0_0_25px_rgba(225,29,72,0.15)]' : 'bg-zinc-900/10 border-white/5 hover:border-white/10'}`}
+                          >
+                            <div className="w-14 h-20 bg-zinc-800 rounded-2xl overflow-hidden shrink-0">
+                               {movie.posterUrl ? <img src={movie.posterUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-900 font-black">?</div>}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className={`text-[11px] font-black uppercase italic truncate ${selectedMovieId === movie.id ? 'text-white' : 'text-zinc-600 group-hover:text-white'}`}>{movie.title}</h4>
+                              <p className="text-[8px] font-black text-zinc-700 uppercase italic mt-1">{movie.genre[0]}</p>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className={`text-[11px] font-black uppercase italic truncate ${selectedMovieId === movie.id ? 'text-white' : 'text-zinc-600 group-hover:text-white'}`}>{movie.title}</h4>
-                            <p className="text-[8px] font-black text-zinc-700 uppercase italic mt-1">{movie.genre[0]}</p>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                    );
+                  })}
+                  {movies.length === 0 && (
+                    <div className="p-10 text-center opacity-30">
+                       <p className="text-[10px] font-black uppercase italic tracking-widest">Kho phim trống</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -309,12 +352,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                     </div>
 
                     {/* Action Bar */}
-                    <div className="mt-auto pt-10 flex gap-4 border-t border-white/5">
-                       <button onClick={handleSaveMovie} className="flex-1 bg-red-600 text-white py-6 rounded-2xl font-black italic uppercase tracking-[0.3em] text-xs shadow-2xl hover:bg-red-700 transition-all">
-                          LƯU & ĐỒNG BỘ
+                    <div className="mt-auto pt-10 flex gap-4 border-t border-white/5 items-center">
+                       <button onClick={handleDeleteMovie} className="px-10 py-6 rounded-2xl border-2 border-red-600/30 text-red-600 font-black italic uppercase tracking-widest text-[10px] hover:bg-red-600 hover:text-white transition-all shadow-xl shadow-red-600/5">
+                          XÓA PHIM
                        </button>
-                       <button onClick={() => fetchData()} className="px-12 bg-zinc-900 text-zinc-600 py-6 rounded-2xl font-black italic uppercase tracking-widest border border-white/5 hover:text-white transition-all">
+                       <div className="flex-1"></div>
+                       <button onClick={() => fetchData()} className="px-12 bg-zinc-900/50 text-zinc-600 py-6 rounded-2xl font-black italic uppercase tracking-widest border border-white/5 hover:text-white transition-all">
                           HỦY BỎ
+                       </button>
+                       <button onClick={handleSaveMovie} className="bg-red-600 text-white py-6 px-16 rounded-2xl font-black italic uppercase tracking-[0.3em] text-xs shadow-2xl hover:bg-red-700 transition-all">
+                          LƯU & ĐỒNG BỘ
                        </button>
                     </div>
                   </div>
