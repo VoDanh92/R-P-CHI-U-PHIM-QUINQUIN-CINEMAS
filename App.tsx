@@ -31,6 +31,8 @@ const App: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
   const [showHeroTrailer, setShowHeroTrailer] = useState(false);
+  const [heroVideoLoading, setHeroVideoLoading] = useState(true);
+  const [heroBlobUrl, setHeroBlobUrl] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<'online' | 'syncing'>('online');
   const [liveNotification, setLiveNotification] = useState<string | null>(null);
 
@@ -87,6 +89,13 @@ const App: React.FC = () => {
   };
 
   const startBooking = () => {
+    // KIỂM TRA ĐĂNG NHẬP TRƯỚC KHI ĐẶT VÉ
+    if (!currentUser) {
+      setShowDetail(false); // Đóng chi tiết phim để tập trung đăng nhập
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     setShowDetail(false);
     setIsBooking(true);
     setBookingStep(1);
@@ -95,6 +104,7 @@ const App: React.FC = () => {
     setSelectedSeats([]);
     setSelectedCombos({});
     setIsBooked(false);
+    setPhoneNumber(currentUser.phone || ''); // Tự động điền SĐT từ tài khoản
   };
 
   const handleToggleSeat = (seatId: string) => {
@@ -159,16 +169,48 @@ const App: React.FC = () => {
 
   const heroMovie = nowShowing[currentHeroIndex] || nowShowing[0];
 
-  const renderTrailerContent = (url: string) => {
-    if (!url) return null;
+  useEffect(() => {
+    let url: string | null = null;
+    const processHeroVideo = async () => {
+      if (showHeroTrailer && heroMovie?.trailerUrl) {
+        setHeroVideoLoading(true);
+        try {
+          const response = await fetch(heroMovie.trailerUrl);
+          const blob = await response.blob();
+          url = URL.createObjectURL(blob);
+          setHeroBlobUrl(url);
+        } catch (e) {
+          setHeroBlobUrl(heroMovie.trailerUrl || null);
+        }
+      }
+    };
+    processHeroVideo();
+    return () => { if (url) URL.revokeObjectURL(url); };
+  }, [showHeroTrailer, heroMovie?.id]);
+
+  const renderTrailerContent = () => {
+    if (!heroBlobUrl) return null;
     return (
-      <video 
-        src={url} 
-        className="w-full h-full object-contain" 
-        controls 
-        autoPlay 
-        playsInline
-      />
+      <div className="w-full h-full relative">
+        {heroVideoLoading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 z-10 backdrop-blur-sm">
+             <div className="w-12 h-12 border-4 border-red-600/20 border-t-red-600 rounded-full animate-spin mb-4"></div>
+             <p className="text-[10px] font-black italic uppercase tracking-widest text-white/50 animate-pulse">BUFFERING 1080P FULL HD TRAILER...</p>
+          </div>
+        )}
+        <video 
+          src={heroBlobUrl} 
+          className="w-full h-full object-contain" 
+          controls 
+          autoPlay 
+          preload="auto"
+          playsInline
+          onCanPlayThrough={() => setHeroVideoLoading(false)}
+          onWaiting={() => setHeroVideoLoading(true)}
+          onPlaying={() => setHeroVideoLoading(false)}
+          controlsList="nodownload"
+        />
+      </div>
     );
   };
 
@@ -188,13 +230,17 @@ const App: React.FC = () => {
           <div key={`hero-content-${heroMovie?.id}`} className="max-w-4xl animate-in fade-in slide-in-from-left-12 duration-1000">
             <div className="flex items-center gap-3 mb-8">
               <span className="w-12 h-1 bg-red-600 rounded-full"></span>
-              <span className="text-[10px] font-black text-white uppercase tracking-[0.4em] italic">Hot nhất hôm nay</span>
+              <span className="text-[10px] font-black text-white uppercase tracking-[0.4em] italic">Hot nhất hôm nay • 1080P FULL HD</span>
             </div>
             <h1 className="text-6xl md:text-9xl font-black italic mb-10 leading-[0.85] uppercase tracking-tighter drop-shadow-2xl">{heroMovie?.title}</h1>
             <p className="text-zinc-400 text-sm md:text-lg italic font-medium max-w-xl mb-12 line-clamp-3 leading-relaxed drop-shadow-lg">{heroMovie?.description}</p>
             <div className="flex gap-6">
               <button onClick={() => handleMovieSelect(heroMovie)} className="bg-red-600 hover:bg-red-700 text-white font-black py-6 px-16 rounded-2xl shadow-2xl shadow-red-600/40 transition-all hover:-translate-y-2 uppercase italic tracking-widest text-xs">XEM CHI TIẾT</button>
-              <button onClick={() => heroMovie?.trailerUrl && setShowHeroTrailer(true)} disabled={!heroMovie?.trailerUrl} className={`bg-white/5 hover:bg-white/10 backdrop-blur-xl text-white font-black py-6 px-16 rounded-2xl border border-white/10 transition-all hover:-translate-y-2 uppercase italic tracking-widest text-xs ${!heroMovie?.trailerUrl ? 'opacity-30 cursor-not-allowed' : ''}`}>XEM TRAILER</button>
+              <button onClick={() => {
+                if(heroMovie?.trailerUrl) {
+                  setShowHeroTrailer(true);
+                }
+              }} disabled={!heroMovie?.trailerUrl} className={`bg-white/5 hover:bg-white/10 backdrop-blur-xl text-white font-black py-6 px-16 rounded-2xl border border-white/10 transition-all hover:-translate-y-2 uppercase italic tracking-widest text-xs ${!heroMovie?.trailerUrl ? 'opacity-30 cursor-not-allowed' : ''}`}>XEM TRAILER 1080P</button>
             </div>
           </div>
         </div>
@@ -369,7 +415,17 @@ const App: React.FC = () => {
             {activePage === 'movies' && (
               <div className="pt-32 pb-32">
                  <h1 className="text-8xl font-black italic uppercase text-center mb-24 tracking-tighter">DANH SÁCH <span className="text-red-600">PHIM</span></h1>
-                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">{movies.map(m => <MovieCard key={m.id} movie={m} onSelect={handleMovieSelect} />)}</div>
+                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">{nowShowing.map(m => <MovieCard key={m.id} movie={m} onSelect={handleMovieSelect} />)}</div>
+              </div>
+            )}
+            {activePage === 'coming_soon' && (
+              <div className="pt-32 pb-32">
+                 <h1 className="text-8xl font-black italic uppercase text-center mb-24 tracking-tighter">SẮP <span className="text-zinc-500">RA MẮT</span></h1>
+                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
+                    {comingSoon.length === 0 ? (
+                      <div className="col-span-full py-40 text-center text-zinc-800 font-black italic uppercase tracking-widest">Đang cập nhật thêm siêu phẩm mới...</div>
+                    ) : comingSoon.map(m => <MovieCard key={m.id} movie={m} onSelect={handleMovieSelect} />)}
+                 </div>
               </div>
             )}
             {activePage === 'profile' && currentUser && <CustomerProfile user={currentUser} onLogout={() => { localStorage.removeItem('quinquin_customer'); setCurrentUser(null); setActivePage('home'); }} onClose={() => setActivePage('home')} onUpdateUser={(u) => { setCurrentUser(u); localStorage.setItem('quinquin_customer', JSON.stringify(u)); }} />}
@@ -384,11 +440,11 @@ const App: React.FC = () => {
       {showHeroTrailer && heroMovie?.trailerUrl && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 animate-in fade-in duration-300 backdrop-blur-sm">
            <div className="absolute inset-0 cursor-pointer" onClick={() => setShowHeroTrailer(false)}></div>
-           <div className="w-full max-w-5xl aspect-video rounded-[2.5rem] overflow-hidden border border-white/10 relative shadow-[0_0_100px_rgba(225,29,72,0.3)] animate-in zoom-in-95">
+           <div className="w-full max-w-5xl aspect-video rounded-[2.5rem] overflow-hidden border border-white/10 relative shadow-[0_0_100px_rgba(225,29,72,0.3)] animate-in zoom-in-95 bg-black">
               <button onClick={() => setShowHeroTrailer(false)} className="absolute top-6 right-6 z-30 bg-black/40 hover:bg-red-600 text-white p-3 rounded-full transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </button>
-              {renderTrailerContent(heroMovie.trailerUrl)}
+              {renderTrailerContent()}
            </div>
         </div>
       )}

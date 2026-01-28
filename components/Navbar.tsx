@@ -35,6 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activePage }) => {
             {[
               { id: 'home', label: 'Trang Chủ' },
               { id: 'movies', label: 'Lịch Chiếu' },
+              { id: 'coming_soon', label: 'Phim Sắp Chiếu' },
               { id: 'admin', label: 'Quản Trị' }
             ].map((item) => (
               <button
