@@ -9,7 +9,7 @@ import CustomerLogin from './components/CustomerLogin';
 import CustomerProfile from './components/CustomerProfile';
 import MovieDetail from './components/MovieDetail';
 import { MOVIES as DEFAULT_MOVIES, THEATERS, COMBOS } from './constants';
-import { Movie, Theater, ShowTime, Combo, Ticket } from './types';
+import { Movie, Theater, ShowTime, Ticket } from './types';
 import { syncService, SyncEventType, SyncMessage } from './services/syncService';
 
 const App: React.FC = () => {
@@ -29,7 +29,6 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // Trạng thái Client-Server
   const [serverStatus, setServerStatus] = useState<'online' | 'syncing'>('online');
   const [liveNotification, setLiveNotification] = useState<string | null>(null);
 
@@ -40,7 +39,6 @@ const App: React.FC = () => {
     };
     loadData();
 
-    // Đăng ký nhận cập nhật từ "Máy chủ"
     const unsubscribe = syncService.subscribe((msg: SyncMessage) => {
       setServerStatus('syncing');
       
@@ -127,7 +125,6 @@ const App: React.FC = () => {
     const existing = JSON.parse(localStorage.getItem('cine_tickets') || '[]');
     localStorage.setItem('cine_tickets', JSON.stringify([...existing, newTicket]));
     
-    // Phát tín hiệu tới các client khác
     syncService.broadcast(SyncEventType.TICKET_BOOKED, { movieTitle: selectedMovie?.title });
     
     setIsBooked(true);
@@ -147,7 +144,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-red-600 overflow-x-hidden">
-      {/* Huy hiệu trạng thái mạng */}
       <div className="fixed top-24 right-6 z-[60] flex items-center gap-3 bg-black/40 backdrop-blur-xl px-4 py-2 rounded-full border border-white/5 shadow-2xl">
         <div className={`w-2 h-2 rounded-full ${serverStatus === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-yellow-500 animate-pulse'}`}></div>
         <span className="text-[8px] font-black uppercase tracking-widest italic text-zinc-400">
@@ -156,7 +152,6 @@ const App: React.FC = () => {
         <span className="text-[8px] font-mono text-zinc-600 border-l border-white/10 pl-2">ID: {syncService.getClientId()}</span>
       </div>
 
-      {/* Thông báo trực tuyến */}
       {liveNotification && (
         <div className="fixed bottom-24 left-6 z-[60] animate-in slide-in-from-left-10 duration-500">
           <div className="bg-red-600 text-white font-black italic px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-red-400/20">

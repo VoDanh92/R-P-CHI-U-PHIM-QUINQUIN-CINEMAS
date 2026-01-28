@@ -46,14 +46,15 @@ const ChatBot: React.FC<ChatBotProps> = ({ onStartBooking }) => {
     }
 
     if (name === 'book_movie') {
-      const movie = MOVIES.find(m => m.title.toLowerCase().includes(args.movieTitle?.toLowerCase() || ''));
+      const movieTitle = args.movieTitle || '';
+      const movie = MOVIES.find(m => m.title.toLowerCase().includes(movieTitle.toLowerCase()));
       if (movie) {
         if (onStartBooking) {
           setTimeout(() => onStartBooking(movie.title), 500);
           return `Tuyệt vời! Tôi đang chuyển bạn đến trang đặt vé phim "${movie.title}". Chúc bạn có trải nghiệm tuyệt vời tại QuinQuin Cinemas!`;
         }
       }
-      return `Hiện tại rạp QuinQuin không có phim "${args.movieTitle}" trong lịch chiếu. Bạn có muốn xem danh sách các phim đang hot không?`;
+      return `Hiện tại rạp QuinQuin không có phim "${movieTitle}" trong lịch chiếu. Bạn có muốn xem danh sách các phim đang hot không?`;
     }
 
     return "Chức năng này đang được cập nhật.";
@@ -70,17 +71,27 @@ const ChatBot: React.FC<ChatBotProps> = ({ onStartBooking }) => {
     try {
       const response = await GeminiService.chat(userMsg);
       
-      if (response.functionCalls && response.functionCalls.length > 0) {
-        for (const fc of response.functionCalls) {
-          // Kiểm tra fc.name để tránh lỗi TS2345
-          const functionName = fc.name || '';
-          if (functionName) {
-            const result = await executeFunction(functionName, fc.args);
-            setMessages(prev => [...prev, { role: 'bot', text: result }]);
+      if (response.candidates?.[0]?.content?.parts) {
+        let textResponse = '';
+        
+        for (const part of response.candidates[0].content.parts) {
+          if (part.functionCall) {
+            const functionName = part.functionCall.name || '';
+            if (functionName) {
+              const result = await executeFunction(functionName, part.functionCall.args);
+              textResponse += (textResponse ? '\n\n' : '') + result;
+            }
+          } else if (part.text) {
+            textResponse += (textResponse ? ' ' : '') + part.text;
           }
         }
+        
+        if (textResponse) {
+          setMessages(prev => [...prev, { role: 'bot', text: textResponse }]);
+        } else {
+          setMessages(prev => [...prev, { role: 'bot', text: response.text || 'Tôi đã tiếp nhận yêu cầu của bạn.' }]);
+        }
       } else {
-        // response.text có thể undefined, dùng fallback string
         setMessages(prev => [...prev, { role: 'bot', text: response.text || 'Tôi chưa hiểu ý bạn lắm, bạn có thể nói rõ hơn được không?' }]);
       }
     } catch (err) {
