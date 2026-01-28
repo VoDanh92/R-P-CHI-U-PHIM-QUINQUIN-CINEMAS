@@ -111,7 +111,6 @@ const App: React.FC = () => {
 
   const calculateTotal = () => {
     const seatPrice = selectedSeats.length * (selectedShowtime?.price || 0);
-    // Fix: Cast qty as number to resolve 'unknown' type comparison errors with Object.entries
     const comboPrice = Object.entries(selectedCombos).reduce((total, [id, qty]) => {
       const quantityValue = qty as number;
       const combo = COMBOS.find(c => c.id === id);
@@ -121,7 +120,6 @@ const App: React.FC = () => {
   };
 
   const handleFinalBooking = () => {
-    // Fix: Explicitly cast qty to number to fix assignment and comparison errors
     const combosToSave = Object.entries(selectedCombos)
       .filter(([_, qty]) => (qty as number) > 0)
       .map(([id, qty]) => ({
@@ -297,8 +295,15 @@ const App: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[60vh] overflow-y-auto px-4 custom-scrollbar pb-10">
                       {COMBOS.map(combo => (
                         <div key={combo.id} className="glass p-8 rounded-[3rem] flex gap-8 items-center border-white/5 hover:border-red-600/20 transition-all bg-zinc-900/20 group">
-                          <div className="w-28 h-28 rounded-[2rem] overflow-hidden shrink-0 shadow-2xl border border-white/5">
-                            <img src={combo.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                          <div className="w-28 h-28 rounded-[2rem] overflow-hidden shrink-0 shadow-2xl border border-white/5 bg-zinc-800">
+                            <img 
+                              src={combo.imageUrl} 
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                              alt={combo.name}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?q=80&w=400&h=400&auto=format&fit=crop';
+                              }}
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="font-black italic uppercase text-sm mb-1 text-white truncate">{combo.name}</h4>
@@ -330,12 +335,10 @@ const App: React.FC = () => {
                           <h2 className="text-4xl font-black italic uppercase tracking-tighter">{selectedMovie?.title}</h2>
                           <p className="text-sm font-black italic text-zinc-500">{selectedTheater?.name} • {selectedShowtime?.time}</p>
                           <p className="text-sm font-black italic text-red-600 uppercase tracking-widest">Ghế: {selectedSeats.join(', ')}</p>
-                          {/* Fix: Explicitly cast qty to number to resolve 'unknown' operator issues */}
                           {Object.entries(selectedCombos).some(([_, qty]) => (qty as number) > 0) && (
                             <div className="pt-2">
                                <p className="text-[10px] font-black uppercase text-zinc-600 italic mb-2 tracking-widest">Combo đã chọn:</p>
                                <div className="flex flex-wrap gap-2">
-                                  {/* Fix: Explicitly cast qty to number to resolve 'unknown' type errors during mapping */}
                                   {Object.entries(selectedCombos).map(([id, qty]) => {
                                     const comboQty = qty as number;
                                     if (comboQty === 0) return null;

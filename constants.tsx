@@ -151,7 +151,7 @@ export const COMBOS: Combo[] = [
     name: 'COMBO QUINQUIN VIP (PHÔ MAI + GẤU)',
     description: '1 Bắp Phô Mai (L) + 1 Nước (L) + 1 Gấu bông QuinQuin (Limited)',
     price: 195000,
-    imageUrl: 'https://images.unsplash.com/photo-1559440662-30b85e49263e?q=80&w=400&h=400&auto=format&fit=crop'
+    imageUrl: 'https://images.unsplash.com/photo-1541535881105-85cb912540f4?q=80&w=400&h=400&auto=format&fit=crop'
   },
   {
     id: 'c6',
