@@ -25,13 +25,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Movie | null>(null);
 
-  // Chỉ tải danh sách phim từ DB, không phụ thuộc vào editForm để tránh reset khi đang upload
+  // Chỉ tải danh sách phim từ DB
   const fetchMoviesOnly = useCallback(async () => {
     try {
       const movieList = await storageService.getMovies();
       setMovies(movieList);
       
-      // Khởi tạo phim đầu tiên nếu chưa có phim nào được chọn và đang ở tab phim
+      // Khởi tạo phim đầu tiên nếu chưa có phim nào được chọn
       if (!selectedMovieId && movieList.length > 0) {
         setSelectedMovieId(movieList[0].id);
         setEditForm({ ...movieList[0] });
@@ -41,14 +41,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     }
   }, [selectedMovieId]);
 
-  // Tải các dữ liệu giao dịch và người dùng
   const fetchOtherData = useCallback(async () => {
     const savedTickets = localStorage.getItem('cine_tickets');
     const parsedTickets = savedTickets ? JSON.parse(savedTickets) : [];
     setTickets(parsedTickets);
-
-    const registry = JSON.parse(localStorage.getItem('quinquin_users_registry') || '[]');
-    setUsers(registry);
+    setUsers(JSON.parse(localStorage.getItem('quinquin_users_registry') || '[]'));
   }, []);
 
   useEffect(() => {
@@ -59,8 +56,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     fetchOtherData();
     
     setLogs(prev => [
-      `[${new Date().toLocaleTimeString()}] Hệ thống quản trị đã trực tuyến.`,
-      `[${new Date().toLocaleTimeString()}] Kết nối cơ sở dữ liệu: THÀNH CÔNG.`,
+      `[${new Date().toLocaleTimeString()}] QuinQuin OS đã sẵn sàng.`,
+      `[${new Date().toLocaleTimeString()}] Database: Connected.`,
       ...prev
     ]);
 
@@ -68,13 +65,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
       if (msg.type === SyncEventType.TICKET_BOOKED) fetchOtherData();
       if (msg.type === SyncEventType.MOVIE_UPDATED && msg.clientId !== syncService.getClientId()) {
          setMovies(msg.payload);
-         setLogs(prev => [`[${new Date().toLocaleTimeString()}] Đã đồng bộ danh sách phim từ hệ thống.`, ...prev]);
       }
     });
     return () => unsubscribe();
   }, [fetchMoviesOnly, fetchOtherData]);
 
-  // Thống kê doanh thu và đơn hàng
   const stats = useMemo(() => {
     const totalRev = tickets.reduce((s, t) => s + (t.status === 'active' ? t.totalPrice : 0), 0);
     const totalUnits = tickets.length;
@@ -91,7 +86,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
       setMovies(updatedList);
       syncService.broadcast(SyncEventType.MOVIE_UPDATED, updatedList);
     } catch (e) {
-      alert("Lỗi lưu trữ dữ liệu. Vui lòng thử lại.");
+      alert("Lỗi lưu trữ dữ liệu. Hãy thử nén ảnh nhỏ hơn.");
     }
   };
 
@@ -104,19 +99,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     if (!editForm) return;
     const updated = movies.map(m => m.id === editForm.id ? { ...editForm } : m);
     await saveMovies(updated);
-    setLogs(prev => [`[${new Date().toLocaleTimeString()}] Đã lưu thay đổi phim: ${editForm.title}`, ...prev]);
-    alert("Dữ liệu phim đã được cập nhật và đồng bộ!");
+    setLogs(prev => [`[${new Date().toLocaleTimeString()}] Đã cập nhật và đồng bộ: ${editForm.title}`, ...prev]);
+    alert("Dữ liệu đã được lưu thành công!");
   };
 
   const handleDeleteMovie = async () => {
     if (!editForm) return;
-    if (window.confirm(`Bạn có chắc chắn muốn xóa phim "${editForm.title}" không?`)) {
+    if (window.confirm(`Xác nhận xóa phim: ${editForm.title}?`)) {
       const updated = movies.filter(m => m.id !== editForm.id);
       await saveMovies(updated);
-      setLogs(prev => [`[${new Date().toLocaleTimeString()}] Đã xoá phim: ${editForm.title}`, ...prev]);
       if (updated.length > 0) handleSelectMovie(updated[0]);
       else { setSelectedMovieId(null); setEditForm(null); }
-      alert("Đã xóa phim thành công.");
     }
   };
 
@@ -127,10 +120,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     input.onchange = (e: any) => {
       const file = e.target.files[0];
       if (file) {
-        if (type !== 'trailer' && file.size > 3 * 1024 * 1024) {
-          alert("Ảnh quá lớn! Vui lòng chọn file dưới 3MB.");
+        if (type !== 'trailer' && file.size > 5 * 1024 * 1024) {
+          alert("Kích thước file quá lớn (Tối đa 5MB)!");
           return;
         }
+
         const reader = new FileReader();
         reader.onloadend = () => {
           const result = reader.result as string;
@@ -219,27 +213,52 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 <button onClick={() => {
                   const newMovie: Movie = { id: 'm' + Date.now(), title: 'PHIM MỚI', description: '', genre: ['Hành động'], rating: 0, duration: '0h 00m', posterUrl: '', backdropUrl: '', releaseDate: new Date().toISOString().split('T')[0], isComingSoon: false };
                   const updatedList = [newMovie, ...movies];
-                  saveMovies(updatedList);
+                  setMovies(updatedList);
                   handleSelectMovie(newMovie);
                 }} className="w-full bg-red-600 text-white py-6 rounded-[2rem] font-black italic uppercase tracking-widest text-[11px] shadow-2xl hover:scale-[1.02] transition-transform">
                   + THÊM PHIM MỚI
                 </button>
-                <div className="space-y-8 flex-1 overflow-y-auto pr-2 custom-scrollbar max-h-[60vh]">
-                  {movies.map(movie => (
-                    <div 
-                      key={movie.id} 
-                      onClick={() => handleSelectMovie(movie)}
-                      className={`group p-4 rounded-[2rem] flex items-center gap-5 cursor-pointer border-2 transition-all ${selectedMovieId === movie.id ? 'bg-zinc-900/50 border-red-600' : 'bg-zinc-900/10 border-white/5 hover:border-white/10'}`}
-                    >
-                      <div className="w-14 h-20 bg-zinc-800 rounded-2xl overflow-hidden shrink-0">
-                         {movie.posterUrl ? <img src={movie.posterUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-900 font-black">?</div>}
+                
+                <div className="space-y-8 flex-1 overflow-y-auto pr-2 custom-scrollbar max-h-[70vh]">
+                  {/* Nhóm Đang Chiếu */}
+                  <div className="space-y-4">
+                    <p className="text-[9px] font-black text-zinc-600 uppercase italic tracking-widest ml-4">ĐANG CHIẾU</p>
+                    {movies.filter(m => !m.isComingSoon).map(movie => (
+                      <div 
+                        key={movie.id} 
+                        onClick={() => handleSelectMovie(movie)}
+                        className={`group p-4 rounded-[2rem] flex items-center gap-5 cursor-pointer border-2 transition-all ${selectedMovieId === movie.id ? 'bg-zinc-900/50 border-red-600' : 'bg-zinc-900/10 border-white/5'}`}
+                      >
+                        <div className="w-14 h-20 bg-zinc-800 rounded-2xl overflow-hidden shrink-0">
+                           {movie.posterUrl ? <img src={movie.posterUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-900 font-black">?</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[11px] font-black uppercase italic truncate">{movie.title}</h4>
+                          <p className="text-[8px] font-black text-zinc-700 uppercase italic mt-1">{movie.genre[0]}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-[11px] font-black uppercase italic truncate">{movie.title}</h4>
-                        <p className="text-[8px] font-black text-zinc-700 uppercase italic mt-1">{movie.genre[0]}</p>
+                    ))}
+                  </div>
+
+                  {/* Nhóm Sắp Chiếu */}
+                  <div className="space-y-4">
+                    <p className="text-[9px] font-black text-red-600/60 uppercase italic tracking-widest ml-4">SẮP CHIẾU</p>
+                    {movies.filter(m => m.isComingSoon).map(movie => (
+                      <div 
+                        key={movie.id} 
+                        onClick={() => handleSelectMovie(movie)}
+                        className={`group p-4 rounded-[2rem] flex items-center gap-5 cursor-pointer border-2 transition-all ${selectedMovieId === movie.id ? 'bg-zinc-900/50 border-red-600' : 'bg-zinc-900/10 border-white/5 opacity-70 grayscale hover:grayscale-0 transition-all'}`}
+                      >
+                        <div className="w-14 h-20 bg-zinc-800 rounded-2xl overflow-hidden shrink-0">
+                           {movie.posterUrl ? <img src={movie.posterUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-900 font-black">?</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[11px] font-black uppercase italic truncate">{movie.title}</h4>
+                          <p className="text-[8px] font-black text-zinc-700 uppercase italic mt-1">{movie.genre[0]}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -255,7 +274,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                <div onClick={() => handleFileUpload('poster')} className="aspect-[3/4] bg-black rounded-[2.5rem] border-2 border-dashed border-zinc-900 hover:border-red-600 transition-all flex items-center justify-center overflow-hidden cursor-pointer relative group">
                                   {editForm.posterUrl ? <img src={editForm.posterUrl} className="w-full h-full object-cover group-hover:opacity-40" /> : <span className="text-zinc-900 text-4xl font-black">+</span>}
                                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="bg-red-600 text-[8px] px-3 py-1 rounded-full font-black">CHỌN ẢNH</span>
+                                    <span className="bg-red-600 text-[8px] px-4 py-2 rounded-full font-black">CHỌN ẢNH</span>
                                   </div>
                                </div>
                             </div>
@@ -265,34 +284,62 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                   <div onClick={() => handleFileUpload('backdrop')} className="aspect-video bg-black rounded-[2.5rem] border-2 border-dashed border-zinc-900 hover:border-red-600 transition-all flex items-center justify-center overflow-hidden cursor-pointer relative group">
                                      {editForm.backdropUrl ? <img src={editForm.backdropUrl} className="w-full h-full object-cover group-hover:opacity-40" /> : <span className="text-zinc-900 text-4xl font-black">+</span>}
                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                       <span className="bg-red-600 text-[8px] px-3 py-1 rounded-full font-black">CHỌN ẢNH</span>
+                                       <span className="bg-red-600 text-[8px] px-4 py-2 rounded-full font-black">CHỌN ẢNH</span>
                                      </div>
                                   </div>
                                </div>
                                <div className="grid grid-cols-2 gap-4">
-                                  <input type="text" value={editForm.duration} onChange={(e) => setEditForm({...editForm, duration: e.target.value})} className="w-full bg-black border border-white/5 rounded-xl p-4 text-[11px] font-bold" placeholder="Thời lượng" />
-                                  <input type="number" step="0.1" value={editForm.rating} onChange={(e) => setEditForm({...editForm, rating: parseFloat(e.target.value)})} className="w-full bg-black border border-white/5 rounded-xl p-4 text-[11px] font-bold" placeholder="Điểm" />
+                                  <div className="space-y-1">
+                                    <p className="text-[8px] font-black text-zinc-600 uppercase ml-2">THỜI LƯỢNG</p>
+                                    <input type="text" value={editForm.duration} onChange={(e) => setEditForm({...editForm, duration: e.target.value})} className="w-full bg-black border border-white/5 rounded-xl p-4 text-[11px] font-bold outline-none focus:border-red-600" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <p className="text-[8px] font-black text-zinc-600 uppercase ml-2">ĐIỂM</p>
+                                    <input type="number" step="0.1" value={editForm.rating} onChange={(e) => setEditForm({...editForm, rating: parseFloat(e.target.value)})} className="w-full bg-black border border-white/5 rounded-xl p-4 text-[11px] font-bold outline-none focus:border-red-600" />
+                                  </div>
+                               </div>
+                               <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-2xl border border-white/5">
+                                 <p className="text-[10px] font-black text-zinc-400 uppercase italic">PHIM SẮP CHIẾU</p>
+                                 <button 
+                                  onClick={() => setEditForm({...editForm, isComingSoon: !editForm.isComingSoon})}
+                                  className={`w-12 h-6 rounded-full transition-all flex items-center px-1 ${editForm.isComingSoon ? 'bg-red-600' : 'bg-zinc-800'}`}
+                                 >
+                                    <div className={`w-4 h-4 bg-white rounded-full transition-all ${editForm.isComingSoon ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                                 </button>
                                </div>
                             </div>
                          </div>
                          <div className="p-8 bg-black rounded-[2.5rem] border border-white/5 space-y-4">
-                            <p className="text-[9px] font-black text-red-600 uppercase italic">TRAILER VIDEO</p>
-                            <button onClick={() => handleFileUpload('trailer')} className="w-full py-4 bg-zinc-900/50 rounded-xl border border-white/5 text-[10px] font-black uppercase italic">TẢI VIDEO TỪ MÁY</button>
-                            {editForm.trailerUrl && <video src={editForm.trailerUrl} className="w-full rounded-xl mt-4" controls />}
+                            <p className="text-[9px] font-black text-red-600 uppercase italic">TRAILER VIDEO (MP4)</p>
+                            <button onClick={() => handleFileUpload('trailer')} className="w-full py-4 bg-zinc-900/50 rounded-xl border border-white/5 text-[10px] font-black uppercase italic hover:bg-zinc-800 transition-colors">TẢI VIDEO TỪ MÁY</button>
+                            {editForm.trailerUrl && (
+                              <div className="relative group">
+                                <video src={editForm.trailerUrl} className="w-full rounded-xl mt-4" controls />
+                                <button onClick={() => setEditForm({...editForm, trailerUrl: ''})} className="absolute top-6 right-2 bg-red-600 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                </button>
+                              </div>
+                            )}
                          </div>
                       </div>
                       <div className="space-y-8">
-                         <input type="text" value={editForm.title} onChange={(e) => setEditForm({...editForm, title: e.target.value})} className="w-full bg-black border border-white/5 rounded-[1.5rem] p-6 text-xl font-black italic uppercase" placeholder="TÊN PHIM" />
-                         <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} className="w-full h-[380px] bg-black border border-white/5 rounded-[2rem] p-8 text-sm leading-relaxed italic text-zinc-400 outline-none focus:border-red-600 resize-none custom-scrollbar" placeholder="MÔ TẢ NỘI DUNG" />
+                         <div className="space-y-2">
+                           <p className="text-[9px] font-black text-zinc-600 uppercase italic ml-4">TÊN PHIM</p>
+                           <input type="text" value={editForm.title} onChange={(e) => setEditForm({...editForm, title: e.target.value})} className="w-full bg-black border border-white/5 rounded-[1.5rem] p-6 text-xl font-black italic uppercase outline-none focus:border-red-600" />
+                         </div>
+                         <div className="space-y-2">
+                            <p className="text-[9px] font-black text-zinc-600 uppercase italic ml-4">MÔ TẢ CHI TIẾT</p>
+                            <textarea value={editForm.description} onChange={(e) => setEditForm({...editForm, description: e.target.value})} className="w-full h-[380px] bg-black border border-white/5 rounded-[2rem] p-8 text-sm leading-relaxed italic text-zinc-400 outline-none focus:border-red-600 resize-none custom-scrollbar" />
+                         </div>
                       </div>
                     </div>
-                    <div className="mt-auto pt-10 flex gap-4 border-t border-white/5">
+                    <div className="mt-auto pt-10 flex gap-4 border-t border-white/5 items-center">
                        <button onClick={handleDeleteMovie} className="px-10 py-6 rounded-2xl border-2 border-red-600/30 text-red-600 font-black italic uppercase text-[10px] hover:bg-red-600 hover:text-white transition-all">XÓA PHIM</button>
                        <div className="flex-1"></div>
-                       <button onClick={handleSaveMovie} className="bg-red-600 text-white py-6 px-16 rounded-2xl font-black italic uppercase tracking-[0.3em] text-xs shadow-2xl">LƯU & ĐỒNG BỘ</button>
+                       <button onClick={handleSaveMovie} className="bg-red-600 text-white py-6 px-16 rounded-2xl font-black italic uppercase tracking-[0.3em] text-xs shadow-2xl hover:bg-red-700 transition-all">LƯU & ĐỒNG BỘ</button>
                     </div>
                   </div>
-                ) : <div className="h-full flex items-center justify-center opacity-20 uppercase font-black">Chọn phim để chỉnh sửa</div>}
+                ) : <div className="h-full flex items-center justify-center opacity-20 uppercase font-black italic">Chọn phim từ danh sách bên trái</div>}
               </div>
             </div>
           )}
