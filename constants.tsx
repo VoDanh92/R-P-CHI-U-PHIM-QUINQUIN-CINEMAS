@@ -11,7 +11,8 @@ export const MOVIES: Movie[] = [
     duration: '2h 34m',
     posterUrl: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/s5HQfPixVrMWtnsA2Mizwoeeybr.jpg',
     backdropUrl: 'https://image.tmdb.org/t/p/original/Yc9q6Pu6roMX8uYxEn0796U08y.jpg',
-    releaseDate: '2024-09-20'
+    releaseDate: '2024-09-20',
+    isComingSoon: false
   },
   {
     id: 'm2',
@@ -22,7 +23,8 @@ export const MOVIES: Movie[] = [
     duration: '1h 44m',
     posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/6Y00p49EivhY47D0y793pS6k8Uv.jpg',
     backdropUrl: 'https://www.themoviedb.org/t/p/original/66986C9S798pS6k8Uv.jpg',
-    releaseDate: '2024-09-20'
+    releaseDate: '2024-09-20',
+    isComingSoon: false
   },
   {
     id: 'm3',
@@ -33,7 +35,8 @@ export const MOVIES: Movie[] = [
     duration: '1h 50m',
     posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/36p8Uv6Y00p49EivhY47D0y79.jpg',
     backdropUrl: 'https://www.themoviedb.org/t/p/original/speak-no-evil-backdrop.jpg',
-    releaseDate: '2024-09-13'
+    releaseDate: '2024-09-13',
+    isComingSoon: false
   },
   {
     id: 'm4',
@@ -44,18 +47,8 @@ export const MOVIES: Movie[] = [
     duration: '2h 18m',
     posterUrl: 'https://iguov8nhvyobj.vcdn.cloud/media/catalog/product/l/m/lm7_teaser_poster_1_.jpg',
     backdropUrl: 'https://iguov8nhvyobj.vcdn.cloud/media/banner/cache/1/b58515f018eb9da2a7589055a435ae0e/l/a/lat_mat_7_980x448.jpg',
-    releaseDate: '2024-04-26'
-  },
-  {
-    id: 'm5',
-    title: 'Ma Da',
-    description: 'Dựa trên truyền thuyết đô thị về Ma Da kéo giò, bộ phim xoay quanh nghề hạ bạc trên sông nước miền Tây và những bí ẩn tâm linh rợn người.',
-    genre: ['Kinh dị', 'Tâm linh'],
-    rating: 7.5,
-    duration: '1h 35m',
-    posterUrl: 'https://iguov8nhvyobj.vcdn.cloud/media/catalog/product/m/a/mada_poster_final_ngang_1_.jpg',
-    backdropUrl: 'https://iguov8nhvyobj.vcdn.cloud/media/banner/cache/1/b58515f018eb9da2a7589055a435ae0e/m/a/mada_980x448.jpg',
-    releaseDate: '2024-08-16'
+    releaseDate: '2024-04-26',
+    isComingSoon: false
   },
   {
     id: 'm6',
@@ -92,13 +85,25 @@ export const MOVIES: Movie[] = [
     backdropUrl: 'https://www.themoviedb.org/t/p/original/moana-2-bg.jpg',
     releaseDate: '2024-11-27',
     isComingSoon: true
+  },
+  {
+    id: 'm9',
+    title: 'Mufasa: Vua Sư Tử',
+    description: 'Khám phá câu chuyện chưa kể về sự trỗi dậy của Mufasa, từ một chú sư tử mồ côi trở thành vị vua vĩ đại của Pride Lands.',
+    genre: ['Phiêu lưu', 'Gia đình'],
+    rating: 0,
+    duration: '2h 00m',
+    posterUrl: 'https://www.themoviedb.org/t/p/w600_and_h900_bestv2/mufasa-poster.jpg',
+    backdropUrl: 'https://www.themoviedb.org/t/p/original/mufasa-bg.jpg',
+    releaseDate: '2024-12-20',
+    isComingSoon: true
   }
 ];
 
 export const THEATERS: Theater[] = [
   {
     id: 't1',
-    name: 'CGV Vincom Đồng Khởi',
+    name: 'QuinQuin Vincom Đồng Khởi',
     location: '72 Lê Thánh Tôn, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
     showtimes: [
       { id: 's1', time: '09:00', format: '2D', price: 110000 },
@@ -109,7 +114,7 @@ export const THEATERS: Theater[] = [
   },
   {
     id: 't2',
-    name: 'Galaxy Nguyễn Du',
+    name: 'QuinQuin Nguyễn Du',
     location: '116 Nguyễn Du, Quận 1, TP. Hồ Chí Minh',
     showtimes: [
       { id: 's5', time: '10:15', format: '2D', price: 85000 },
@@ -120,12 +125,42 @@ export const THEATERS: Theater[] = [
   },
   {
     id: 't3',
-    name: 'Lotte Cinema Gò Vấp',
-    location: '242 Nguyễn Văn Lượng, Quận Gò Vấp, TP. Hồ Chí Minh',
+    name: 'QuinQuin Vincom Bà Triệu',
+    location: '191 Bà Triệu, Lê Đại Hành, Hai Bà Trưng, Hà Nội',
     showtimes: [
-      { id: 's9', time: '11:00', format: '2D', price: 90000 },
-      { id: 's10', time: '15:20', format: '3D', price: 130000 },
-      { id: 's11', time: '20:45', format: '2D', price: 90000 }
+      { id: 's9', time: '09:30', format: '2D', price: 105000 },
+      { id: 's10', time: '14:00', format: 'IMAX', price: 230000 },
+      { id: 's11', time: '18:30', format: '2D', price: 105000 }
+    ]
+  },
+  {
+    id: 't4',
+    name: 'QuinQuin Metropolis',
+    location: '29 Liễu Giai, Ngọc Khánh, Ba Đình, Hà Nội',
+    showtimes: [
+      { id: 's12', time: '11:15', format: '2D', price: 115000 },
+      { id: 's13', time: '16:45', format: '3D', price: 170000 },
+      { id: 's14', time: '20:00', format: '2D', price: 115000 }
+    ]
+  },
+  {
+    id: 't5',
+    name: 'QuinQuin Vĩnh Trung Plaza',
+    location: '255-257 Hùng Vương, Thanh Khê, Đà Nẵng',
+    showtimes: [
+      { id: 's15', time: '10:00', format: '2D', price: 80000 },
+      { id: 's16', time: '15:30', format: '2D', price: 80000 },
+      { id: 's17', time: '19:45', format: '2D', price: 90000 }
+    ]
+  },
+  {
+    id: 't6',
+    name: 'QuinQuin Big C Cần Thơ',
+    location: 'Lô số 1, Khu Dân Cư Hưng Phú 1, Cái Răng, Cần Thơ',
+    showtimes: [
+      { id: 's18', time: '09:15', format: '2D', price: 75000 },
+      { id: 's19', time: '13:00', format: '2D', price: 75000 },
+      { id: 's20', time: '18:15', format: '2D', price: 85000 }
     ]
   }
 ];
